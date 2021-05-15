@@ -15,7 +15,7 @@
                             </div>
                         </div>
                         <hr>
-                        <input id="form-button" class="btn btn-success btn-block" type="submit" value="Continue">
+                        <input id="form-button" class="btn btn-success btn-block process_order" type="submit" value="Continue">
                     </form>
                 </div>
 
@@ -33,28 +33,18 @@
                         <div class="cart-row">
                             <div style="flex:2"><img class="row-image" src="{{ item.product.imageURL }}"></div>
                             <div style="flex:2"><p>{{ item.product.name }}</p></div>
-                            <div style="flex:1"><p>${{ item.product.price|floatformat:2 }}</p></div>
+                            <div style="flex:1"><p> {{ item.product.price|floatformat:2 }}</p></div>
                             <div style="flex:1"><p>x{{ item.quantity }}</p></div>
                         </div>
                     {% endfor %}
                     <h5>Items: {{ order.get_cart_items }}</h5>
-                    <h5>Total: ${{ order.get_cart_total|floatformat:2 }}</h5>
+                    <h5>Total: {{ order.get_cart_total|floatformat:2 }}</h5>
                 </div>
             </div>
         </div>
     {% endif %}
 
     <script type="text/javascript">
-        var shipping = '{{order.shipping}}'
-
-        if (shipping === 'False') {
-            document.getElementById('shipping-info').innerHTML = ''
-        }
-
-        if (user !== 'AnonymousUser') {
-            document.getElementById('user-info').innerHTML = ''
-        }
-
         var form = document.getElementById('form')
         form.addEventListener('submit', function (e) {
             e.preventDefault()
