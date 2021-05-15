@@ -1,46 +1,22 @@
 {% extends 'store/main.html' %}
 {% load static %}
 {% block content %}
-    <div class="container">
-        <div class="row mt-5">
-            <div class="col-lg-3">
-                <div class="card" style="width: auto">
-                    <div class="card-header">
-                        Featured
-                    </div>
-                    <ul class="list-group list-group-flush">
-                        {% for category in categories %}
-                            <li class="list-group-item"><a style="text-decoration: none"
-                                                           href="/?category={{ category.name }}">{{ category.name }}</a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-            <div class="col-lg-9">
-                <div class="row">
-                    {% for product in products %}
-                        <div class="col-sm-6">
-                            <div class="card shadow-sm p-3 mb-5 rounded">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-lg-3">
-                                            <img class="card-img-top" src="{{ product.imageURL }}" alt="{{ product.name }}">
-                                        </div>
-                                        <div class="col-lg-9">
-                                            <h5 class="card-title"><b>{{ product.name }}</b></h5>
-                                            <p class="card-text"></p>
-                                            <button data-product="{{ product.id }}" data-action="add"
-                                                    class="btn btn-primary add-btn update-cart">Add to Cart
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
+	<div class="row">
+		{% for product in products %}
+		<div class="col-lg-4">
+			<img class="thumbnail" src="{{product.imageURL}}">
+			<div class="box-element product">
+				<h6><strong>{{product.name}}</strong></h6>
+				<hr>
+
+				<button data-product="{{product.id}}" data-action="add" class="btn btn-outline-secondary add-btn update-cart">Add to Cart</button>
+				
+				<a class="btn btn-outline-success" href="#">View</a>
+				<h4 style="display: inline-block; float: right"><strong>${{product.price}}</strong></h4>
+
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+
 {% endblock content %}

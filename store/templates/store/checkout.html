@@ -1,12 +1,10 @@
 {% extends 'store/main.html' %}
 {% load static %}
 {% block content %}
-    <div class="container">
-        <div class="row mt-5">
+    {% if order.get_cart_items %}
+        <div class="row">
             <div class="col-lg-6">
                 <div class="box-element" id="form-wrapper">
-                    <p>Shipping Information:</p>
-                    <hr>
                     <form id="form">
                         <div id="user-info">
                             <div class="form-field">
@@ -16,18 +14,13 @@
                                 <input required class="form-control" type="email" name="email" placeholder="Email..">
                             </div>
                         </div>
-
-                        <div id="shipping-info">
-                            <div class="form-field">
-                                <input class="form-control" type="text" name="phone" placeholder="Phone..">
-                            </div>
-                        </div>
-
                         <hr>
                         <input id="form-button" class="btn btn-success btn-block" type="submit" value="Continue">
                     </form>
                 </div>
+
                 <br>
+
             </div>
 
             <div class="col-lg-6">
@@ -40,53 +33,72 @@
                         <div class="cart-row">
                             <div style="flex:2"><img class="row-image" src="{{ item.product.imageURL }}"></div>
                             <div style="flex:2"><p>{{ item.product.name }}</p></div>
-                            <div style="flex:1"><p>{{ item.product.price|floatformat:2 }}</p></div>
+                            <div style="flex:1"><p>${{ item.product.price|floatformat:2 }}</p></div>
                             <div style="flex:1"><p>x{{ item.quantity }}</p></div>
                         </div>
                     {% endfor %}
-                    <h5>Total Items: {{ order.get_cart_items }}</h5>
-                    <h5>Total Price: <b>{{ order.get_cart_total|floatformat:2 }}</b></h5>
+                    <h5>Items: {{ order.get_cart_items }}</h5>
+                    <h5>Total: ${{ order.get_cart_total|floatformat:2 }}</h5>
                 </div>
             </div>
         </div>
-    </div>
+    {% endif %}
 
     <script type="text/javascript">
-        const shipping = '{{order.shipping}}'
-        const url = "/process_order/"
-        const total = '{{order.get_cart_total}}'
-        const userFormData = {
-            'name': null,
-            'email': null,
-            'total': total,
+        var shipping = '{{order.shipping}}'
+
+        if (shipping === 'False') {
+            document.getElementById('shipping-info').innerHTML = ''
         }
 
-        const shippingInfo = {
-            'phone': null,
-        };
-        const form = document.getElementById('form')
+        if (user !== 'AnonymousUser') {
+            document.getElementById('user-info').innerHTML = ''
+        }
+
+        var form = document.getElementById('form')
         form.addEventListener('submit', function (e) {
             e.preventDefault()
             console.log('Form Submitted...')
-            userFormData.name = form.name.value
-            userFormData.email = form.email.value
-            userFormData.phone = form.phone.value
+            submitFormData()
+        })
 
+        function submitFormData() {
+
+            var userFormData = {
+                'name': null,
+                'email': null,
+                'total':{{order.get_cart_total|floatformat:2}},
+            }
+
+            if (user === 'AnonymousUser') {
+                userFormData.name = form.name.value
+                userFormData.email = form.email.value
+            }
+
+            console.log('User Info:', userFormData)
+
+            var url = "/process_order/"
             fetch(url, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'applicaiton/json',
                     'X-CSRFToken': csrftoken,
                 },
-                body: JSON.stringify({'form': userFormData, 'shipping': shippingInfo}),
-            }).then((data) => {
-                cart = {}
-                alert('Order completed');
-                document.cookie = 'cart=' + JSON.stringify(cart) + ";domain=;path=/"
-                window.location.href = "{% url 'pdf_download' %}"
-            })
-        })
+                body: JSON.stringify({'form': userFormData}),
 
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log('Success:', data);
+                    alert('Transaction completed');
+
+                    cart = {}
+                    document.cookie = 'cart=' + JSON.stringify(cart) + ";domain=;path=/"
+
+                    window.location.href = "{% url 'pdf_download' %}"
+
+                })
+        }
     </script>
 {% endblock content %}
 

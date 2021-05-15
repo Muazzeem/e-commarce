@@ -1,45 +1,48 @@
-from django.shortcuts import render, redirect
-from django.http import JsonResponse, HttpResponse
-import json
 from io import BytesIO
 
+from django.shortcuts import render
+from django.http import JsonResponse, HttpResponse
+import json
+import datetime
+
+from django.template.loader import get_template
 from django.views import View
 from xhtml2pdf import pisa
-from django.template.loader import get_template
 
 from .models import *
-from .utils import cartData, guestOrder
+from .utils import cookieCart, cartData, guestOrder
 
 
 def store(request):
     data = cartData(request)
+
     cartItems = data['cartItems']
+    order = data['order']
+    items = data['items']
+
     products = Product.objects.all()
-    categories = Category.objects.all()
-    category = request.GET.get("category")
-    context = {'cartItems': cartItems, 'categories': categories}
-    if category:
-        products = Product.objects.filter(category__name=category)
-        context.update({'products': products})
-    else:
-        context.update({'products': products})
+    context = {'products': products, 'cartItems': cartItems}
     return render(request, 'store/store.html', context)
 
 
 def cart(request):
     data = cartData(request)
+
     cartItems = data['cartItems']
     order = data['order']
     items = data['items']
+
     context = {'items': items, 'order': order, 'cartItems': cartItems}
     return render(request, 'store/cart.html', context)
 
 
 def checkout(request):
     data = cartData(request)
+
     cartItems = data['cartItems']
     order = data['order']
     items = data['items']
+
     context = {'items': items, 'order': order, 'cartItems': cartItems}
     return render(request, 'store/checkout.html', context)
 
@@ -48,16 +51,20 @@ def updateItem(request):
     data = json.loads(request.body)
     productId = data['productId']
     action = data['action']
+    print('Action:', action)
+    print('Product:', productId)
 
     customer = request.user.customer
-    product, created = Product.objects.get_or_create(id=productId)
-    order, created = Order.objects.get_or_create(customer=customer)
+    product = Product.objects.get(id=productId)
+    order, created = Order.objects.get_or_create(customer=customer, complete=False)
+
     orderItem, created = OrderItem.objects.get_or_create(order=order, product=product)
 
     if action == 'add':
         orderItem.quantity = (orderItem.quantity + 1)
     elif action == 'remove':
         orderItem.quantity = (orderItem.quantity - 1)
+
     orderItem.save()
 
     if orderItem.quantity <= 0:
@@ -67,18 +74,27 @@ def updateItem(request):
 
 
 def processOrder(request):
+    transaction_id = datetime.datetime.now().timestamp()
     data = json.loads(request.body)
-    customer, order = guestOrder(request, data)
-    OrderItem.objects.filter(order_id=order.id)
+
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+    else:
+        customer, order = guestOrder(request, data)
+
     total = float(data['form']['total'])
+    order.transaction_id = transaction_id
+
     if total == order.get_cart_total:
-        order.save()
-    # ShippingAddress.objects.create(
-    #     customer=customer,
-    #     order=order,
-    #     phone=data["form"]["phone"],
-    # )
-    return HttpResponse()
+        order.complete = True
+    order.save()
+    ShippingAddress.objects.create(
+        customer=customer,
+        order=order,
+    )
+
+    return JsonResponse('Order submitted..', safe=False)
 
 
 def render_to_pdf(template_src, context_dict=None, *args, **kwargs):
