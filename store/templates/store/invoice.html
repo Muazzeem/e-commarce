@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>download order details</title>
+    <style>
+        th, td {
+            padding: 5px 15px;
+        }
+
+        th {
+            font-size: 15px;
+        }
+
+        td {
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+<h1 style="text-align: center;">Your Order Details</h1>
+
+<table border="0.5" style="border-collapse: collapse;">
+    <thead>
+    <tr>
+        <th>SL.NO</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for order_item in product_details %}
+        <tr>
+            <td>{{ order_item.name }}</td>
+        </tr>
+    {% endfor %}
+    <tr>
+        <td colspan="4" class="table-disable">Total Amount</td>
+        <td>{{ order.get_cart_total|floatformat:2 }}</td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
