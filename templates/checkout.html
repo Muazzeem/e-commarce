@@ -3,45 +3,41 @@
 
 {% block content %}
 
-  <main >
-    <div class="container wow fadeIn">
-      <h2 class="my-5 h2 text-center">Checkout form</h2>
-      <div class="row">
-        <div class="col-md-8 mb-4">
-          <div class="card">
-            <form method="POST" class="card-body">
-              {% csrf_token %}
+    <main>
+        <div class="container bg-white">
+            <h2 class="my-5 h2 text-center">Checkout form</h2>
+            <div class="row">
+                <div class="col-md-8 mb-4">
+                    <div class="card border-0">
+                        <form method="POST" class="card-body">
+                            {% csrf_token %}
 
-              <h3>Shipping address</h3>
+                            <h3>Billing address:</h3>
 
-              <div class='hideable_shipping_form'>
+                            <div class="mb-3">
+                                <label for="address" class="form-label">Email address</label>
+                                <input type="text" name="address" class="form-control" id="address"
+                                       aria-describedby="emailHelp">
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Phone</label>
+                                <input type="text" name="phone" class="form-control" id="phone">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
 
-                <div class="md-form mb-5">
-                  <input type='text' placeholder='1234 Main St' id='address' name='address' class='form-control' />
-                  <label for="address" class="">Address</label>
+                        </form>
+
+                    </div>
+
                 </div>
 
-                <div class="md-form mb-5">
-                  <input type='text' placeholder='Phone Number' id='phone' name='phone' class='form-control' />
-                  <label for="phone" class="">Phone</label>
+                <div class="col-md-4 mb-4">
+                    {% include "order_snippet.html" %}
                 </div>
-              </div>
-              <hr class="mb-4">
-              <button class="btn btn-primary btn-lg btn-block" type="submit">Continue to checkout</button>
 
-            </form>
-
-          </div>
+            </div>
 
         </div>
-
-        <div class="col-md-4 mb-4">
-          {% include "order_snippet.html" %}
-        </div>
-
-      </div>
-
-    </div>
-  </main>
+    </main>
 
 {% endblock content %}

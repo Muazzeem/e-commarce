@@ -5,10 +5,10 @@
         <div class="container">
 
             <!--Navbar-->
-            <nav class="navbar navbar-expand-lg navbar-dark mdb-color lighten-3 mt-3 mb-5">
+            <nav class="navbar navbar-expand-lg navbar-light bg-white mt-5 mb-5">
 
                 <!-- Navbar brand -->
-                <span class="navbar-brand">Categories:</span>
+                <span class="navbar-brand p-1">Categories:</span>
 
                 <!-- Collapse button -->
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#basicExampleNav"
@@ -31,17 +31,10 @@
                         {% endfor %}
                     </ul>
                     <!-- Links -->
-
-                    <form class="form-inline">
-                        <div class="md-form my-0">
-                            <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
-                        </div>
-                    </form>
                 </div>
             </nav>
-            <section class="text-center mb-4">
-
-                <div class="row wow fadeIn">
+            <div class="text-center mb-4 container">
+                <div class="row">
 
                     {% for item in items %}
                         <div class="col-lg-3 col-md-6 mb-4">
@@ -74,7 +67,7 @@
                     {% endfor %}
                 </div>
 
-            </section>
+            </div>
         </div>
     </main>
 

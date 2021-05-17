@@ -8,7 +8,6 @@ from .views import (
     remove_single_item_from_cart, GeneratePdf,
 )
 
-GeneratePdf
 app_name = 'core'
 
 urlpatterns = [
