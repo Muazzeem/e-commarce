@@ -2,6 +2,10 @@ from django.conf import settings
 from django.db import models
 from django.shortcuts import reverse
 from django.template.defaultfilters import slugify
+import qrcode
+from io import BytesIO
+from django.core.files import File
+from PIL import Image, ImageDraw
 
 
 class UserProfile(models.Model):
@@ -44,41 +48,62 @@ class Item(models.Model):
         })
 
 
-class OrderItem(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
-    ordered = models.BooleanField(default=False)
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    quantity = models.IntegerField(default=1)
+class LineItem(models.Model):
+    basket = models.ForeignKey(
+        'Basket', related_name="lines",
+        on_delete=models.CASCADE)
 
-    def __str__(self):
-        return f"{self.quantity} of {self.item.title}"
+    product = models.ForeignKey(Item, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.IntegerField()
+    total = models.IntegerField()
 
     def get_total_item_price(self):
-        return self.quantity * self.item.price
+        return self.quantity * self.product.price
 
-    def get_amount_saved(self):
-        return self.get_total_item_price() - self.get_total_item_price()
+    def save(self, *args, **kwargs):
+        self.total = self.get_total_item_price()
+        super(LineItem, self).save(*args, **kwargs)
 
     def get_final_price(self):
         return self.get_total_item_price()
 
 
+class Basket(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)
+    total = models.PositiveIntegerField(default=0)
+
+    @property
+    def total_price(self):
+        return sum(line.total for line in self.lines.all())
+
+    class Meta:
+        verbose_name = 'Basket'
+
+
+class OrderLine(models.Model):
+    order = models.ForeignKey(
+        'Order', related_name="lines",
+        on_delete=models.CASCADE)
+
+    product = models.ForeignKey(Item, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.PositiveIntegerField()
+    total = models.PositiveIntegerField()
+
+
 class Order(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
-    items = models.ManyToManyField(OrderItem)
+    total = models.PositiveIntegerField(default=1)
+
     billing_address = models.ForeignKey(
         'Address', related_name='user_address', on_delete=models.SET_NULL, blank=True, null=True)
 
-    def __str__(self):
-        return self.user.email
-
-    def get_total(self):
-        total = 0
-        for order_item in self.items.all():
-            total += order_item.get_final_price()
-        return total
+    @property
+    def product_id(self):
+        return f"#YNT-{self.id}"
 
 
 class Address(models.Model):
@@ -86,9 +111,21 @@ class Address(models.Model):
                              on_delete=models.CASCADE)
     phone = models.CharField(max_length=100)
     address = models.CharField(max_length=100)
+    qr_code = models.ImageField(upload_to='userInfo', blank=True)
+
+    def save(self, *args, **kwargs):
+        qrcode_img = qrcode.make(self.user.username)
+        canvas = Image.new('RGB', (290, 290), 'white')
+        canvas.paste(qrcode_img)
+        fname = f'qr_code-{self.user.username}.png'
+        buffer = BytesIO()
+        canvas.save(buffer, 'PNG')
+        self.qr_code.save(fname, File(buffer), save=False)
+        canvas.close()
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.user.email
+        return self.user.username
 
     class Meta:
-        verbose_name_plural = 'Address'
+        verbose_name = 'Address'

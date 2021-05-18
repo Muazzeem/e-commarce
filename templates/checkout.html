@@ -2,7 +2,6 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-
     <main>
         <div class="container bg-white">
             <h2 class="my-5 h2 text-center">Checkout form</h2>
@@ -11,9 +10,7 @@
                     <div class="card border-0">
                         <form method="POST" class="card-body">
                             {% csrf_token %}
-
                             <h3>Billing address:</h3>
-
                             <div class="mb-3">
                                 <label for="address" class="form-label">Email address</label>
                                 <input type="text" name="address" class="form-control" id="address"
@@ -24,9 +21,7 @@
                                 <input type="text" name="phone" class="form-control" id="phone">
                             </div>
                             <button type="submit" class="btn btn-primary">Submit</button>
-
                         </form>
-
                     </div>
 
                 </div>

@@ -21,7 +21,8 @@
 </head>
 <body>
 <h1 style="text-align: center;">Your Order Details</h1>
-
+<h1 style="text-align: center;">Your order number {{ order.product_id }}</h1>
+<img src="{{user.qr_code.url}}" height="100px">
 <table border="1" style="border-collapse: collapse;">
     <thead>
     <tr>
@@ -33,16 +34,18 @@
     </tr>
     </thead>
     <tbody>
-    <tr>
-        <td>1</td>
-        <td>AAA</td>
-        <td>1</td>
-        <td>100</td>
-        <td>100</td>
-    </tr>
+    {% for order_item in order.lines.all %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ order_item.product.title }}</td>
+            <td>{{ order_item.quantity }}</td>
+            <td>{{ order_item.product.price }}</td>
+            <td>{{ order_item.total }}</td>
+        </tr>
+    {% endfor %}
     <tr>
         <td colspan="4" class="table-disable">Total Amount</td>
-        <td>100</td>
+        <td>{{ order.total }}</td>
     </tr>
     </tbody>
 </table>
