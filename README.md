@@ -7,13 +7,13 @@ This is a very simple e-commerce website built with Django.
 
 ## Project Summary
 
-The website displays products. Users can add and remove products to/from their cart while also specifying the quantity of each item. They can then enter their address and choose Stripe to handle the payment processing.
+The website displays products. Users can add and remove products to/from their cart while also specifying the quantity of each item. They can then enter their address.
 
 ---
 
 ## Running this project
 
-To get this project up and running you should start by having Python installed on your computer. It's advised you create a virtual environment to store your projects dependencies separately. You can install virtualenv with
+It's advised you create a virtual environment to store your projects dependencies separately. You can install virtualenv with
 
 ```
 pip install virtualenv
@@ -22,10 +22,10 @@ pip install virtualenv
 Clone or download this repository and open it in your editor of choice. In a terminal (mac/linux) or windows terminal, run the following command in the base directory of this project
 
 ```
-virtualenv env
+virtualenv venv
 ```
 
-That will create a new folder `env` in your project directory. Next activate it with this command on mac/linux:
+That will create a new folder `venv` in your project directory. Next activate it with this command on mac/linux:
 
 ```
 source env/bin/active

@@ -1,5 +1,5 @@
 from django import template
-from store.models import Basket, LineItem
+from store.models import Basket
 
 register = template.Library()
 
@@ -7,14 +7,6 @@ register = template.Library()
 @register.filter
 def cart_item_count(user):
     if user.is_authenticated:
-        order_qs = Basket.objects.filter(user=user)
-        if order_qs:
-            basket_id = order_qs.first().id
-        else:
-            Basket.objects.create(user=user)
-            basket_id = order_qs.first().id
-        if order_qs:
-            order_qs = LineItem.objects.filter(basket_id=basket_id)
-            return order_qs.count()
-
+        basket, is_created = Basket.objects.get_or_create(user=user)
+        return basket.count_item
     return 0

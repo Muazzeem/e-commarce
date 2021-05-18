@@ -2,10 +2,6 @@ from django.conf import settings
 from django.db import models
 from django.shortcuts import reverse
 from django.template.defaultfilters import slugify
-import qrcode
-from io import BytesIO
-from django.core.files import File
-from PIL import Image, ImageDraw
 
 
 class UserProfile(models.Model):
@@ -64,22 +60,33 @@ class LineItem(models.Model):
     def save(self, *args, **kwargs):
         self.total = self.get_total_item_price()
         super(LineItem, self).save(*args, **kwargs)
+        self.basket.save()
 
     def get_final_price(self):
         return self.get_total_item_price()
 
 
 class Basket(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL,
+                                on_delete=models.CASCADE, related_name="basket")
     total = models.PositiveIntegerField(default=0)
 
-    @property
     def total_price(self):
-        return sum(line.total for line in self.lines.all())
+        total = 0
+        for line in self.lines.all():
+            total += line.total
+        return total
+
+    @property
+    def count_item(self):
+        return self.lines.count()
 
     class Meta:
         verbose_name = 'Basket'
+
+    def save(self, *args, **kwargs):
+        self.total = self.total_price()
+        super(Basket, self).save(*args, **kwargs)
 
 
 class OrderLine(models.Model):
@@ -111,18 +118,6 @@ class Address(models.Model):
                              on_delete=models.CASCADE)
     phone = models.CharField(max_length=100)
     address = models.CharField(max_length=100)
-    qr_code = models.ImageField(upload_to='userInfo', blank=True)
-
-    def save(self, *args, **kwargs):
-        qrcode_img = qrcode.make(self.user.username)
-        canvas = Image.new('RGB', (290, 290), 'white')
-        canvas.paste(qrcode_img)
-        fname = f'qr_code-{self.user.username}.png'
-        buffer = BytesIO()
-        canvas.save(buffer, 'PNG')
-        self.qr_code.save(fname, File(buffer), save=False)
-        canvas.close()
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.user.username

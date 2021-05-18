@@ -1,8 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.signing import Signer
-from django.http import HttpResponse
 from django.shortcuts import redirect, get_object_or_404
 from django.shortcuts import render
 from django.views.generic import ListView, View
@@ -31,7 +29,7 @@ class OrderSummaryView(LoginRequiredMixin, View):
         try:
             basket = Basket.objects.get(user=self.request.user)
             context = {
-                'object': basket
+                'basket': basket
             }
             return render(self.request, 'order_summary.html', context)
         except ObjectDoesNotExist:
@@ -44,7 +42,7 @@ class CheckoutView(View):
         try:
             basket = Basket.objects.get(user=self.request.user)
             context = {
-                'order': basket,
+                'basket': basket,
             }
             return render(self.request, "checkout.html", context)
         except ObjectDoesNotExist:
@@ -54,27 +52,25 @@ class CheckoutView(View):
     def post(self, *args, **kwargs):
         form = CheckoutForm(self.request.POST)
         if form.is_valid():
-            user_address = Address(
+            billing_address = Address(
                 user=self.request.user,
                 address=form.cleaned_data.get('address'),
                 phone=form.cleaned_data.get('phone')
             )
             basket = Basket.objects.get(user=self.request.user)
-            user_address.save()
-            order = Order.objects.create(user=self.request.user, billing_address=user_address,
+            billing_address.save()
+            order = Order.objects.create(user=self.request.user, billing_address=billing_address,
                                          total=basket.total)
-            for order_item in basket.lines.all():
-                OrderLine.objects.get_or_create(
+            for basket_item in basket.lines.all():
+                OrderLine.objects.create(
                     order=order,
-                    product=order_item.product,
-                    quantity=order_item.quantity,
-                    price=order_item.price, total=order_item.total
+                    product=basket_item.product,
+                    quantity=basket_item.quantity,
+                    price=basket_item.price, total=basket_item.total
                 )
-                item = get_object_or_404(Item, slug=order_item.product.slug)
-                item.current_stock -= order_item.quantity
+                item = get_object_or_404(Item, slug=basket_item.product.slug)
+                item.current_stock -= basket_item.quantity
                 item.save()
             basket.delete()
-            signer = Signer()
-            value = signer.sign(order.id)
-            return redirect(reverse('core:generate-pdf', kwargs={"number": value}))
-        return redirect(reverse('core:generate-pdf'))
+            return redirect(reverse('core:generate-pdf', kwargs={"number": order.id}))
+        return redirect(reverse('core:checkout'))

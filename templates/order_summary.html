@@ -24,7 +24,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {% for order_item in object.lines.all %}
+                    {% for order_item in basket.lines.all %}
                         <tr>
                             <th scope="row">{{ forloop.counter }}</th>
                             <td>{{ order_item.product.title }}</td>
@@ -50,10 +50,10 @@
                             </td>
                         </tr>
                     {% endfor %}
-                    {% if object.total_price %}
+                    {% if basket.total_price %}
                         <tr>
                             <td colspan="4"><b>Order Total</b></td>
-                            <td><b> {{ object.total_price }}.00 </b></td>
+                            <td><b> {{ basket.total_price }}.00 </b></td>
                         </tr>
                         <tr>
                             <td colspan="5">

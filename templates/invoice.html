@@ -22,7 +22,7 @@
 <body>
 <h1 style="text-align: center;">Your Order Details</h1>
 <h1 style="text-align: center;">Your order number {{ order.product_id }}</h1>
-<img src="{{user.qr_code.url}}" height="100px">
+
 <table border="1" style="border-collapse: collapse;">
     <thead>
     <tr>
@@ -44,7 +44,7 @@
         </tr>
     {% endfor %}
     <tr>
-        <td colspan="4" class="table-disable">Total Amount</td>
+        <td colspan="4" class="table-disable">Total Amount: {{ price }} taka only</td>
         <td>{{ order.total }}</td>
     </tr>
     </tbody>
