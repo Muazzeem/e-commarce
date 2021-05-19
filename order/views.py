@@ -2,12 +2,13 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 
-from store.models import Item, LineItem
+from store.models import Item, LineItem, Basket
 
 
 @login_required
 def add_to_cart(request, slug):
     item = get_object_or_404(Item, slug=slug)
+    basket, is_created = Basket.objects.get_or_create(user=request.user)
     basket = request.user.basket
     line_item, is_created = LineItem.objects.get_or_create(
         basket=basket, product=item,
